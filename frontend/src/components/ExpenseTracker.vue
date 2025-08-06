@@ -1,12 +1,12 @@
 <script setup>
-import { ref, computed, watch } from "vue";
-import { useExpenses } from "../composables/useExpenses";
+import { ref, computed, watch } from 'vue'
+import { useExpenses } from '../composables/useExpenses'
 
 const props = defineProps({
   date: { type: String, required: true }, // format: YYYY-MM-DD
-});
+})
 
-const month = computed(() => props.date.slice(0, 7));
+const month = computed(() => props.date.slice(0, 7))
 
 const {
   getExpensesByDate,
@@ -20,24 +20,24 @@ const {
   setDailyBudget,
   getMonthlyBudget,
   setMonthlyBudget,
-} = useExpenses();
+} = useExpenses()
 
-const form = ref({ amount: "", description: "", category: "" });
-const editingId = ref(null);
+const form = ref({ amount: '', description: '', category: '' })
+const editingId = ref(null)
 
-const expensesToday = computed(() => getExpensesByDate(props.date));
-const totalToday = computed(() => getTotalByDate(props.date));
-const totalMonth = computed(() => getTotalByMonth(month.value));
+const expensesToday = computed(() => getExpensesByDate(props.date))
+const totalToday = computed(() => getTotalByDate(props.date))
+const totalMonth = computed(() => getTotalByMonth(month.value))
 
-const dailyBudget = ref(getDailyBudget(props.date));
-const monthlyBudget = ref(getMonthlyBudget());
-const dailyBudgetInput = ref(dailyBudget.value);
-const monthlyBudgetInput = ref(monthlyBudget.value);
+const dailyBudget = ref(getDailyBudget(props.date))
+const monthlyBudget = ref(getMonthlyBudget())
+const dailyBudgetInput = ref(dailyBudget.value)
+const monthlyBudgetInput = ref(monthlyBudget.value)
 
-const collapsed = ref(false);
+const collapsed = ref(false)
 
 function toggleCollapse() {
-  collapsed.value = !collapsed.value;
+  collapsed.value = !collapsed.value
 }
 
 function onSubmit() {
@@ -46,104 +46,126 @@ function onSubmit() {
       amount: parseFloat(form.value.amount),
       description: form.value.description,
       category: form.value.category,
-    });
-    editingId.value = null;
+    })
+    editingId.value = null
   } else {
     addExpense({
       date: props.date,
       amount: parseFloat(form.value.amount),
       description: form.value.description,
       category: form.value.category,
-    });
+    })
   }
-  form.value = { amount: "", description: "", category: "" };
+  form.value = { amount: '', description: '', category: '' }
 }
 
 function startEdit(expense) {
-  editingId.value = expense._id;
+  editingId.value = expense._id
   form.value = {
     amount: expense.amount,
     description: expense.description || expense.note,
     category: expense.category,
-  };
+  }
 }
 
 function cancelEdit() {
-  editingId.value = null;
-  form.value = { amount: "", description: "", category: "" };
+  editingId.value = null
+  form.value = { amount: '', description: '', category: '' }
 }
 
 function deleteExpense(id) {
-  removeExpense(id);
+  removeExpense(id)
   if (editingId.value === id) {
-    cancelEdit();
+    cancelEdit()
   }
 }
 
 function updateDailyBudget() {
-  setDailyBudget(dailyBudgetInput.value, props.date);
-  dailyBudget.value = getDailyBudget(props.date);
+  setDailyBudget(dailyBudgetInput.value, props.date)
+  dailyBudget.value = getDailyBudget(props.date)
 }
 function updateMonthlyBudget() {
-  setMonthlyBudget(monthlyBudgetInput.value);
-  monthlyBudget.value = getMonthlyBudget();
+  setMonthlyBudget(monthlyBudgetInput.value)
+  monthlyBudget.value = getMonthlyBudget()
 }
 
 // Keep budgets in sync if changed elsewhere
 watch(
   () => getDailyBudget(props.date),
   (val) => {
-    dailyBudget.value = val;
-    dailyBudgetInput.value = val;
+    dailyBudget.value = val
+    dailyBudgetInput.value = val
   }
-);
+)
 watch(
   () => getMonthlyBudget(),
   (val) => {
-    monthlyBudget.value = val;
-    monthlyBudgetInput.value = val;
+    monthlyBudget.value = val
+    monthlyBudgetInput.value = val
   }
-);
+)
 </script>
 
 <template>
   <div
-    class="expense-tracker rounded-lg border border-gray-200 shadow p-2 sm:p-4 bg-white space-y-4 mt-6"
+    class="expense-tracker glass-effect rounded-xl border border-blue-400/20 shadow-lg p-6 space-y-6 mt-6 relative overflow-hidden"
   >
     <div
-      class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-2 cursor-pointer select-none hover:bg-gray-50 rounded transition"
+      class="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-transparent"
+    ></div>
+
+    <div
+      class="flex flex-col sm:flex-row items-start sm:items-center justify-between cursor-pointer select-none hover:bg-blue-600/10 rounded-lg p-3 transition-all duration-300 relative z-10"
       @click="toggleCollapse"
     >
-      <h2 class="text-lg font-semibold mb-2 sm:mb-0">Expense Tracker</h2>
+      <div class="flex items-center gap-3 mb-2 sm:mb-0">
+        <div
+          class="w-3 h-3 bg-gradient-to-r from-blue-400 to-blue-500 rounded-full animate-pulse"
+        ></div>
+        <h2 class="text-xl font-bold text-slate-100">Expense Tracker</h2>
+      </div>
+
       <div
-        class="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto"
+        class="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 w-full sm:w-auto"
       >
-        <div class="flex space-x-2 w-full sm:w-auto" v-if="!collapsed">
-          <label class="flex items-center text-sm w-full sm:w-auto" @click.stop>
-            <span class="mr-1">Daily Budget:</span>
+        <div
+          class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto"
+          v-if="!collapsed"
+        >
+          <label
+            class="flex flex-col sm:flex-row sm:items-center gap-2 text-sm w-full sm:w-auto"
+            @click.stop
+          >
+            <span class="text-slate-300 font-medium">Daily Budget:</span>
             <input
               type="number"
               v-model.number="dailyBudgetInput"
               @change="updateDailyBudget"
               min="0"
-              class="w-full sm:w-20 px-2 py-1 border border-gray-300 rounded text-sm"
+              class="w-full sm:w-24 px-3 py-2 bg-slate-700/50 border border-blue-400/30 rounded-lg text-slate-100 placeholder-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all duration-300"
             />
           </label>
-          <label class="flex items-center text-sm w-full sm:w-auto" @click.stop>
-            <span class="mr-1">Monthly Budget:</span>
+          <label
+            class="flex flex-col sm:flex-row sm:items-center gap-2 text-sm w-full sm:w-auto"
+            @click.stop
+          >
+            <span class="text-slate-300 font-medium">Monthly Budget:</span>
             <input
               type="number"
               v-model.number="monthlyBudgetInput"
               @change="updateMonthlyBudget"
               min="0"
-              class="w-full sm:w-24 px-2 py-1 border border-gray-300 rounded text-sm"
+              class="w-full sm:w-28 px-3 py-2 bg-slate-700/50 border border-blue-400/30 rounded-lg text-slate-100 placeholder-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all duration-300"
             />
           </label>
         </div>
-        <span class="ml-0 sm:ml-2 p-1 rounded transition self-end sm:self-auto">
+
+        <div
+          class="p-2 rounded-lg hover:bg-blue-600/20 transition-all duration-300"
+        >
           <svg
             :class="[
-              'w-5 h-5 transition-transform',
+              'w-6 h-6 transition-transform duration-300 text-blue-300',
               collapsed ? 'rotate-180' : 'rotate-0',
             ]"
             fill="none"
@@ -157,57 +179,65 @@ watch(
               d="M19 9l-7 7-7-7"
             />
           </svg>
-        </span>
+        </div>
       </div>
     </div>
+
     <transition name="collapse-smooth">
-      <div v-show="!collapsed" class="collapse-content">
+      <div v-show="!collapsed" class="collapse-content relative z-10">
         <div
-          class="flex flex-col md:flex-row md:items-stretch gap-4 text-sm border-t border-gray-100 pt-2"
+          class="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-gradient-to-r from-slate-800/30 to-slate-700/30 rounded-xl border border-slate-600/30"
         >
-          <div class="flex-1 flex flex-col gap-1">
-            <div>
-              <span class="font-medium">Spent Today: </span>
-              <span class="text-red-600">{{ totalToday.toFixed(2) }} €</span>
+          <div class="space-y-3">
+            <div class="flex justify-between items-center">
+              <span class="font-medium text-slate-300">Spent Today:</span>
+              <span class="text-red-400 font-bold text-lg"
+                >{{ totalToday.toFixed(2) }} €</span
+              >
             </div>
-            <div>
-              <span class="font-medium">Remaining Today: </span>
+            <div class="flex justify-between items-center">
+              <span class="font-medium text-slate-300">Remaining Today:</span>
               <span
-                :class="
+                :class="[
+                  'font-bold text-lg',
                   dailyBudget - totalToday < 0
-                    ? 'text-red-600 font-semibold'
-                    : 'text-green-600 font-semibold'
-                "
+                    ? 'text-red-400'
+                    : 'text-green-400',
+                ]"
               >
                 {{ (dailyBudget - totalToday).toFixed(2) }} €
               </span>
             </div>
           </div>
-          <div class="hidden md:block w-px bg-gray-200 mx-2"></div>
-          <div
-            class="flex-1 flex flex-col gap-1 md:pl-4 md:border-l md:border-gray-200 mt-2 md:mt-0"
-          >
-            <div>
-              <span class="font-medium">Spent This Month: </span>
-              <span class="text-red-600">{{ totalMonth.toFixed(2) }} €</span>
+
+          <div class="space-y-3 md:border-l md:border-slate-600/50 md:pl-6">
+            <div class="flex justify-between items-center">
+              <span class="font-medium text-slate-300">Spent This Month:</span>
+              <span class="text-red-400 font-bold text-lg"
+                >{{ totalMonth.toFixed(2) }} €</span
+              >
             </div>
-            <div>
-              <span class="font-medium">Remaining This Month: </span>
+            <div class="flex justify-between items-center">
+              <span class="font-medium text-slate-300"
+                >Remaining This Month:</span
+              >
               <span
-                :class="
+                :class="[
+                  'font-bold text-lg',
                   monthlyBudget - totalMonth < 0
-                    ? 'text-red-600 font-semibold'
-                    : 'text-green-600 font-semibold'
-                "
+                    ? 'text-red-400'
+                    : 'text-green-400',
+                ]"
               >
                 {{ (monthlyBudget - totalMonth).toFixed(2) }} €
               </span>
             </div>
           </div>
         </div>
+
         <form
           @submit.prevent="onSubmit"
-          class="flex flex-col sm:flex-row sm:items-end gap-2 border-t border-gray-100 pt-4"
+          class="flex flex-col sm:flex-row sm:items-end gap-3 border-t border-slate-600/30 pt-6 mt-6"
         >
           <input
             v-model="form.amount"
@@ -216,63 +246,72 @@ watch(
             min="0"
             placeholder="Amount (€)"
             required
-            class="px-2 py-1 border border-gray-300 rounded w-full sm:w-24 text-sm"
+            class="px-4 py-3 bg-slate-700/50 border border-blue-400/30 rounded-lg w-full sm:w-32 text-slate-100 placeholder-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all duration-300"
           />
           <input
             v-model="form.description"
             type="text"
             placeholder="Description"
             required
-            class="px-2 py-1 border border-gray-300 rounded w-full flex-1 text-sm"
+            class="px-4 py-3 bg-slate-700/50 border border-blue-400/30 rounded-lg w-full flex-1 text-slate-100 placeholder-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all duration-300"
           />
           <input
             v-model="form.category"
             type="text"
             placeholder="Category"
-            class="px-2 py-1 border border-gray-300 rounded w-full sm:w-28 text-sm"
+            class="px-4 py-3 bg-slate-700/50 border border-blue-400/30 rounded-lg w-full sm:w-36 text-slate-100 placeholder-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all duration-300"
           />
-          <div class="flex gap-2 w-full sm:w-auto">
+          <div class="flex gap-3 w-full sm:w-auto">
             <button
               type="submit"
-              class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm w-full sm:w-auto"
+              class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-lg hover:from-blue-600 hover:to-blue-700 font-medium w-full sm:w-auto transition-all duration-300 shadow-lg shadow-blue-500/25"
             >
-              {{ editingId ? "Update" : "Add" }}
+              {{ editingId ? 'Update' : 'Add' }}
             </button>
             <button
               v-if="editingId"
               type="button"
               @click="cancelEdit"
-              class="bg-gray-200 text-gray-700 px-3 py-1 rounded hover:bg-gray-300 text-sm w-full sm:w-auto"
+              class="bg-gradient-to-r from-slate-600 to-slate-700 text-slate-200 px-6 py-3 rounded-lg hover:from-slate-700 hover:to-slate-800 font-medium w-full sm:w-auto transition-all duration-300"
             >
               Cancel
             </button>
           </div>
         </form>
-        <ul class="expense-list divide-y divide-gray-100">
-          <li
+
+        <div class="space-y-3">
+          <div
             v-for="expense in expensesToday"
             :key="expense._id"
-            class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-2 gap-1 sm:gap-0"
+            class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 glass-effect rounded-lg border border-slate-600/30 hover:border-blue-400/30 transition-all duration-300 group"
           >
-            <div>
-              <span class="font-medium text-red-600"
-                >{{ expense.amount.toFixed(2) }} €</span
+            <div class="flex-1">
+              <div class="flex items-center gap-3 mb-1">
+                <span class="font-bold text-red-400 text-lg"
+                  >{{ expense.amount.toFixed(2) }} €</span
+                >
+                <span class="text-slate-400">•</span>
+                <span class="text-slate-200 font-medium">{{
+                  expense.description
+                }}</span>
+              </div>
+              <div
+                v-if="expense.category"
+                class="text-sm text-blue-300 font-medium"
               >
-              <span class="mx-2 text-gray-500">-</span>
-              <span>{{ expense.description }}</span>
-              <span v-if="expense.category" class="ml-2 text-xs text-gray-400"
-                >({{ expense.category }})</span
-              >
+                📂 {{ expense.category }}
+              </div>
             </div>
-            <div class="flex gap-2 mt-1 sm:mt-0">
+
+            <div class="flex gap-2 mt-2 sm:mt-0">
               <button
                 @click="startEdit(expense)"
-                class="text-gray-500 hover:text-blue-600"
-                title="Edit"
+                class="text-blue-300 hover:text-blue-100 p-2 rounded-lg hover:bg-blue-600/20 transition-all duration-300"
+                title="Edit expense"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  class="h-4 w-4"
+                  class="h-5 w-5"
                   viewBox="0 0 20 20"
                   fill="currentColor"
                 >
@@ -283,12 +322,12 @@ watch(
               </button>
               <button
                 @click="deleteExpense(expense._id)"
-                class="text-gray-500 hover:text-red-600"
-                title="Delete"
+                class="text-slate-400 hover:text-red-400 p-2 rounded-lg hover:bg-red-600/20 transition-all duration-300"
+                title="Delete expense"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  class="h-4 w-4"
+                  class="h-5 w-5"
                   viewBox="0 0 20 20"
                   fill="currentColor"
                 >
@@ -300,35 +339,45 @@ watch(
                 </svg>
               </button>
             </div>
-          </li>
-          <li
+          </div>
+
+          <div
             v-if="expensesToday.length === 0"
-            class="text-gray-400 text-sm py-2 text-center"
+            class="text-slate-400 text-center py-8 italic"
           >
             No expenses for today.
-          </li>
-        </ul>
+          </div>
+        </div>
       </div>
     </transition>
   </div>
 </template>
 
 <style scoped>
+.glass-effect {
+  background: rgba(26, 32, 44, 0.8);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
 .collapse-smooth-enter-active,
 .collapse-smooth-leave-active {
   transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 .collapse-smooth-enter-from,
 .collapse-smooth-leave-to {
   max-height: 0;
   opacity: 0;
 }
+
 .collapse-smooth-enter-to,
 .collapse-smooth-leave-from {
   max-height: 2000px;
   opacity: 1;
 }
+
 .collapse-content {
   overflow: hidden;
 }

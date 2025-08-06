@@ -1,110 +1,124 @@
 <script setup>
-import { ref } from "vue";
-import { useTasks } from "../composables/useTasks";
-import { useMoods } from "../composables/useMoods";
-import { useAuth } from "../composables/useAuth";
+import { ref } from 'vue'
+import { useAuth } from '../composables/useAuth'
 import {
   CalendarDaysIcon,
   CalendarIcon,
   Squares2X2Icon,
   ClockIcon,
   UserIcon,
-  ArrowRightOnRectangleIcon,
-  ArrowLeftOnRectangleIcon,
-} from "@heroicons/vue/24/outline";
+  ArrowRightStartOnRectangleIcon,
+  ArrowLeftStartOnRectangleIcon,
+} from '@heroicons/vue/24/outline'
 
 const props = defineProps({
   currentView: String,
-});
-const emit = defineEmits(["setView", "open-auth-modal", "logout"]);
+})
+const emit = defineEmits([
+  'setView',
+  'open-auth-modal',
+  'logout',
+  'go-to-landing',
+])
 
-const isMenuOpen = ref(false);
+const isMenuOpen = ref(false)
 
-const setView = (view) => {
-  emit("setView", view);
-  isMenuOpen.value = false;
-};
-
-const { user, isAuthenticated } = useAuth();
-
-const showLogoutConfirm = ref(false);
-
-function confirmLogout() {
-  emit("logout");
-  showLogoutConfirm.value = false;
+function handleNavItemClick(view) {
+  emit('setView', view)
+  isMenuOpen.value = false
 }
 
+const { user, isAuthenticated } = useAuth()
+
 const navItems = [
-  { view: "DayView", label: "Day", icon: CalendarDaysIcon },
-  { view: "WeekView", label: "Week", icon: CalendarIcon },
-  { view: "MonthView", label: "Month", icon: Squares2X2Icon },
-  { view: "TimelineView", label: "Timeline", icon: ClockIcon },
-];
+  { view: 'DayView', label: 'Day', icon: CalendarDaysIcon },
+  { view: 'WeekView', label: 'Week', icon: CalendarIcon },
+  { view: 'MonthView', label: 'Month', icon: Squares2X2Icon },
+  { view: 'TimelineView', label: 'Timeline', icon: ClockIcon },
+]
 </script>
 
 <template>
-  <header class="bg-gray-800 text-gray-100 p-4 w-full">
-    <div class="container mx-auto flex justify-between items-center w-full">
-      <div class="flex items-center space-x-2">
-        <img
-          src="/logo.png"
-          alt="Flowbit Logo"
-          class="h-10 w-10 object-contain cursor-pointer"
-          @click="$emit('setView', 'DayView')"
-        />
-        <h1
-          class="text-2xl font-bold text-gray-100 cursor-pointer"
-          @click="$emit('setView', 'DayView')"
+  <header
+    class="glass-effect border-b border-blue-400/20 p-4 w-full relative overflow-hidden bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900"
+  >
+    <div
+      class="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-slate-700/5"
+    ></div>
+
+    <div
+      class="container mx-auto flex justify-between items-center w-full relative z-10"
+    >
+      <div class="flex items-center space-x-3">
+        <button
+          @click="$emit('go-to-landing')"
+          class="flex items-center space-x-3 group"
         >
-          Flowbit 
-        </h1>
+          <div
+            class="w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-500 rounded-lg flex items-center justify-center"
+          >
+            <div class="w-4 h-4 bg-white rounded-sm"></div>
+          </div>
+          <h1
+            class="text-2xl font-bold text-white group-hover:text-blue-200 transition-all duration-300"
+          >
+            FlowBit
+          </h1>
+        </button>
       </div>
 
-      <!-- Desktop: Navigation + Auth Controls Grouped -->
-      <div class="hidden md:flex items-center space-x-4">
+      <div class="hidden md:flex items-center space-x-2">
         <button
           v-for="item in navItems"
           :key="item.view"
-          @click="$emit('setView', item.view)"
+          @click="handleNavItemClick(item.view)"
           :class="[
-            'px-3 py-2 rounded text-base sm:text-lg text-gray-100 flex items-center gap-1',
-            { 'bg-gray-700': currentView === item.view },
+            'px-4 py-2 rounded-lg text-base font-medium text-white flex items-center gap-2 transition-all duration-300 relative group',
+            currentView === item.view
+              ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/25'
+              : 'hover:bg-gradient-to-r hover:from-blue-600/30 hover:to-blue-700/30 hover:text-blue-200',
           ]"
           class="cursor-pointer"
         >
-          <component :is="item.icon" class="w-5 h-5 mr-1" />
-          {{ item.label }}
+          <component :is="item.icon" class="w-5 h-5 relative z-10" />
+          <span class="relative z-10">{{ item.label }}</span>
         </button>
-        <div class="ml-4 flex items-center gap-2">
+
+        <div class="ml-6 flex items-center gap-3">
           <template v-if="isAuthenticated">
-            <UserIcon class="w-5 h-5 text-gray-300 mr-1" />
-            <span class="text-gray-100 mr-2">{{ user.username }}</span>
-            <button
-              @click="showLogoutConfirm = true"
-              class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 flex items-center gap-1"
+            <div
+              class="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-slate-700/50 to-slate-600/50 rounded-lg border border-slate-500/30"
             >
-              <ArrowRightOnRectangleIcon class="w-5 h-5" /> Logout
+              <UserIcon class="w-5 h-5 text-blue-300" />
+              <span class="text-white font-medium">{{ user.username }}</span>
+            </div>
+            <button
+              @click="$emit('logout')"
+              class="px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 flex items-center gap-2 transition-all duration-300 shadow-lg shadow-red-500/25"
+            >
+              <ArrowRightStartOnRectangleIcon class="w-5 h-5" />
+              <span class="font-medium">Logout</span>
             </button>
           </template>
           <template v-else>
             <button
               @click="$emit('open-auth-modal')"
-              class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1"
+              class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 flex items-center gap-2 transition-all duration-300 shadow-lg shadow-blue-500/25 glow-effect-hover"
             >
-              <ArrowLeftOnRectangleIcon class="w-5 h-5" /> Login
+              <ArrowLeftStartOnRectangleIcon class="w-5 h-5" />
+              <span class="font-medium">Login</span>
             </button>
           </template>
         </div>
       </div>
 
-      <!-- Mobile: Hamburger toggles nav+auth -->
       <div class="md:hidden">
         <button
           @click="isMenuOpen = !isMenuOpen"
-          class="cursor-pointer p-2 rounded hover:bg-gray-700"
+          class="cursor-pointer p-3 rounded-lg glass-effect border border-blue-400/30 hover:bg-blue-600/20 transition-all duration-300"
         >
           <svg
-            class="w-6 h-6 text-gray-100"
+            class="w-6 h-6 text-white"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -121,7 +135,6 @@ const navItems = [
       </div>
     </div>
 
-    <!-- Mobile Menu -->
     <transition
       enter-active-class="transition ease-out duration-200"
       enter-from-class="transform opacity-0 scale-95"
@@ -132,80 +145,63 @@ const navItems = [
     >
       <div
         v-if="isMenuOpen"
-        class="md:hidden mt-4 origin-top-right bg-gray-800 rounded shadow-lg p-4"
+        class="md:hidden mt-4 origin-top-right glass-effect rounded-xl shadow-2xl p-6 border border-blue-400/30"
       >
-        <nav class="flex flex-col space-y-2">
+        <nav class="flex flex-col space-y-3">
           <button
             v-for="item in navItems"
             :key="item.view"
-            @click="
-              $emit('setView', item.view);
-              isMenuOpen = false;
-            "
+            @click="handleNavItemClick(item.view)"
             :class="[
-              'px-3 py-2 rounded text-left cursor-pointer text-base text-gray-100 flex items-center gap-1',
-              { 'bg-gray-700': currentView === item.view },
+              'px-4 py-3 rounded-lg text-left cursor-pointer text-base font-medium text-slate-200 flex items-center gap-3 transition-all duration-300',
+              currentView === item.view
+                ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/25'
+                : 'hover:bg-gradient-to-r hover:from-blue-600/30 hover:to-blue-700/30 hover:text-white',
             ]"
           >
-            <component :is="item.icon" class="w-5 h-5 mr-1" />
+            <component :is="item.icon" class="w-5 h-5" />
             {{ item.label }}
           </button>
-          <hr class="border-gray-600 my-2" />
+
           <template v-if="isAuthenticated">
-            <div class="flex items-center gap-2 mb-2">
-              <UserIcon class="w-5 h-5 text-gray-300" />
-              <span class="text-gray-100">{{ user.username }}</span>
+            <div
+              class="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-slate-700/50 to-slate-600/50 rounded-lg border border-slate-500/30"
+            >
+              <UserIcon class="w-5 h-5 text-blue-300" />
+              <span class="text-slate-200 font-medium">{{
+                user.username
+              }}</span>
             </div>
             <button
               @click="
-                showLogoutConfirm = true;
-                isMenuOpen = false;
+                () => {
+                  $emit('logout')
+                  isMenuOpen = false
+                }
               "
-              class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 flex items-center gap-1"
+              class="px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 flex items-center gap-3 transition-all duration-300 shadow-lg shadow-red-500/25"
             >
-              <ArrowRightOnRectangleIcon class="w-5 h-5" /> Logout
+              <ArrowRightStartOnRectangleIcon class="w-5 h-5" />
+              <span class="font-medium">Logout</span>
             </button>
           </template>
           <template v-else>
             <button
               @click="
-                $emit('open-auth-modal');
-                isMenuOpen = false;
+                () => {
+                  $emit('open-auth-modal')
+                  isMenuOpen = false
+                }
               "
-              class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1"
+              class="px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 flex items-center gap-3 transition-all duration-300 shadow-lg shadow-blue-500/25"
             >
-              <ArrowLeftOnRectangleIcon class="w-5 h-5" /> Login
+              <ArrowLeftStartOnRectangleIcon class="w-5 h-5" />
+              <span class="font-medium">Login</span>
             </button>
           </template>
         </nav>
       </div>
     </transition>
-
-    <!-- Logout Confirmation Modal -->
-    <div
-      v-if="showLogoutConfirm"
-      class="fixed inset-0 bg-opacity-50 overflow-y-auto h-full w-full backdrop-blur-sm flex items-center justify-center pt-10 pb-10 z-50"
-    >
-      <div
-        class="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs text-center"
-      >
-        <p class="mb-4 text-gray-800">Are you sure you want to logout?</p>
-        <div class="flex justify-center space-x-4">
-          <button
-            @click="confirmLogout"
-            class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-          >
-            Yes
-          </button>
-          <button
-            @click="showLogoutConfirm = false"
-            class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
   </header>
 </template>
 
@@ -218,15 +214,24 @@ const navItems = [
     transform: translateX(0);
   }
 }
+
 .animate-slide-in {
   animation: slide-in 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 .sidebar-fade-enter-active,
 .sidebar-fade-leave-active {
   transition: opacity 0.2s;
 }
+
 .sidebar-fade-enter-from,
 .sidebar-fade-leave-to {
   opacity: 0;
+}
+
+.glass-effect {
+  background: rgba(15, 24, 40, 0.8);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
 }
 </style>

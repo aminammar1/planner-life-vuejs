@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: fowbit-backend
+    ports:
+      - '5000:5000'
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - MONGODB_URI=${MONGODB_URI}
+      - JWT_SECRET=${JWT_SECRET}
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    depends_on:
+      - mongodb
+    networks:
+      - fowbit-network
+
+  frontend:
+    build: ./frontend
+    container_name: fowbit-frontend
+    ports:
+      - '3000:3000'
+    depends_on:
+      - backend
+    networks:
+      - fowbit-network
+
+  mongodb:
+    image: mongo:7
+    container_name: fowbit-mongodb
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - fowbit-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  fowbit-network:
+    driver: bridge
